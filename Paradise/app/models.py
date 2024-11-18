@@ -4,16 +4,6 @@ from django.conf import settings
 from django.urls import reverse
 
 
-
-class Profile(models.Model):
-    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    birthday = models.DateField(default=None)
-    address = models.CharField(max_length=255, default=None)
-
-    def __str__(self):
-        return self.user.username
-
-
 class PaymentMethod(models.Model):
     method_id = models.AutoField(primary_key=True)
     method_type = models.CharField(max_length=255, default='')

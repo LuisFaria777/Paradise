@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Verificação de Email</title>
+</head>
+<body>
+    <h2>Verifique seu Email</h2>
+    <p>Digite o código OTP que enviamos para o seu email.</p>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Verificar</button>
+    </form>
+</body>
+</html>

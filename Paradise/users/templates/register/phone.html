@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Registro - Número de Telefone</title>
+</head>
+<body>
+    <h2>Digite seu Número de Telefone</h2>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Próximo</button>
+    </form>
+</body>
+</html>

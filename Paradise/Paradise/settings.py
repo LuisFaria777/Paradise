@@ -1,5 +1,5 @@
+from pathlib import Path
 import os
-from django.urls import reverse_lazy
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -21,9 +21,6 @@ AUTHENTICATION_BACKENDS = [
     
     # Needed to login by username in Django admin, regardless of `allauth`
     'django.contrib.auth.backends.ModelBackend',
-
-    # `allauth` specific authentication methods, such as login by email
-    'allauth.account.auth_backends.AuthenticationBackend',
     
 ]
 
@@ -37,14 +34,14 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
-    'allauth.socialaccount.providers.google',
-    
-    'otp_app',
-    'app'
+    'django_otp',
+    'two_factor',
+    'app',
+    'users',
+    'rest_framework',
 ]
+
+AUTH_USER_MODEL = 'users.User'
 
 SITE_ID = 1
 
@@ -56,9 +53,17 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "allauth.account.middleware.AccountMiddleware",
 ]
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+}
 
 
 SOCIALACCOUNT_PROVIDERS = {
@@ -71,8 +76,8 @@ SOCIALACCOUNT_PROVIDERS = {
         # credentials, or list them here:
         "APPS": [
             {
-                "client_id": "844645438679-u3ih3nk8tsabtblf4d83joad29vrjr04.apps.googleusercontent.com",
-                "secret": "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",
+                "client_id": "",
+                "secret": "",
                 "key": ""
             },
         ],
@@ -93,7 +98,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'app/templates')],
+        'DIRS': [os.path.join(BASE_DIR, 'users/templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -139,9 +144,15 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-TWILIO_ACCOUNT_SID = 'your_account_sid_here'
-TWILIO_AUTH_TOKEN = 'your_auth_token_here'
-TWILIO_PHONE_NUMBER = 'your_twilio_phone_number_here'
+TWILIO_ACCOUNT_SID = 'AC250054b787f0413f1d06f9d1d6599d91'
+TWILIO_AUTH_TOKEN = 'b022f29fc82c57e32906685f3701107d'
+TWILIO_FROM_NUMBER = '+5531996478501'  # Seu número de telefone Twilio
+
+# Configurações para Django Two-Factor Authentication
+TWO_FACTOR_SMS_GATEWAY = 'two_factor.gateways.twilio.gateway.Twilio'
+TWO_FACTOR_CALL_GATEWAY = 'two_factor.gateways.twilio.gateway.Twilio'
+
+TWO_FACTOR_TWILIO_CALLER_ID = TWILIO_FROM_NUMBER
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
@@ -160,27 +171,63 @@ ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory' 
 ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = '/some-page-after-verification/'
+ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 1
 
-AUTH_USER_MODEL = 'otp_app.CustomUser'
 
-
-STATIC_URL = "app/static/"
+STATIC_URL = "users/static/"
 ROOT_URLCONF = 'Paradise.urls'
-STATIC_ROOT = os.path.join(BASE_DIR, "app/static/")
+STATIC_ROOT = os.path.join(BASE_DIR, "/static/")
 
-LOGIN_URL = reverse_lazy('signin')
-LOGOUT_URL = reverse_lazy('logout')
-LOGOUT_REDIRECT_URL = 'signin'
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+LOGIN_URL = 'login_attempt'
+LOGOUT_URL = 'logout'
 LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = 'login_attempt'
 
-
-LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
-
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+LANGUAGE_CODE = 'pt-BR'
+TIME_ZONE = 'America/Sao_Paulo'
 USE_I18N = True
-
 USE_L10N = True
 
 USE_TZ = True
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'error.log'),
+            'formatter': 'verbose',
+        },
+        'console': {
+            'level': 'ERROR',
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+        'project': {
+            'handlers': ['console', 'file'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+    },
+}

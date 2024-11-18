@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Registro - Nome e Email</title>
+</head>
+<body>
+    <h2>Digite seu Nome, Sobrenome e Email</h2>
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Próximo</button>
+    </form>
+</body>
+</html>
